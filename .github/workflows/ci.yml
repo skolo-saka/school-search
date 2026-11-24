@@ -29,5 +29,9 @@ jobs:
       - run: npm run build
       - name: Build the demo
         run: npm run demo:build
-      - name: Check the packed package in a clean app
+      - name: Check the packed package in a clean app (React 19)
+        run: node scripts/check-package.mjs
+      - name: Check the packed package in a clean app (React 18)
+        env:
+          REACT_MAJOR: '18'
         run: node scripts/check-package.mjs

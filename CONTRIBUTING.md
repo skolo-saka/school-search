@@ -47,8 +47,11 @@ You need [Node.js 24](https://nodejs.org/) (24.11 or later) and Git. `.nvmrc` pi
    npm test
    npm run build
    npm run demo:build
+   node scripts/check-package.mjs
+   REACT_MAJOR=18 node scripts/check-package.mjs
    ```
 
+   The package check runs against React 19 by default; `REACT_MAJOR=18 node scripts/check-package.mjs` checks the package against React 18.
 4. Commit with a short message in the imperative ("Fix Escape closing the wrong list"), push to your fork and open a pull request against `main`.
 
 ## Pull requests

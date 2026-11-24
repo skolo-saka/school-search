@@ -1,6 +1,7 @@
 // Checks the package exactly as npm would publish it, then installs it into a clean app.
 //   node scripts/check-package.mjs                 builds, packs into a temp folder and checks that
 //   node scripts/check-package.mjs <file.tgz>      checks an existing tarball (the release workflow)
+// Set REACT_MAJOR=18 to check the package against React 18 instead of React 19 (the default).
 // Exits non-zero on any problem. Needs network access to install React for the clean app.
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
@@ -15,6 +16,12 @@ const fail = msg => { console.error(`check-package: ${msg}`); process.exitCode =
 const work = mkdtempSync(join(tmpdir(), 'school-search-check-'));
 
 try {
+  // The React major to install into the clean consumer app. Defaults to 19; set
+  // REACT_MAJOR=18 to check the package against React 18 (package.json declares
+  // react >=18 as a peer dependency).
+  const reactMajor = process.env.REACT_MAJOR ?? '19';
+  if (!['18', '19'].includes(reactMajor)) throw new Error(`REACT_MAJOR must be 18 or 19, got ${reactMajor}`);
+
   // 1. The tarball
   let tgz = process.argv[2] && resolve(process.argv[2]);
   if (!tgz) {
@@ -41,7 +48,7 @@ try {
   copyFileSync(tgz, join(app, expectedName));
   writeFileSync(join(app, 'package.json'), JSON.stringify({ name: 'consumer', private: true, type: 'module' }));
   npm(['install', '--no-audit', '--no-fund', '--ignore-scripts', `./${expectedName}`,
-    'react@19', 'react-dom@19', '@types/react@19', 'typescript@5'], app);
+    `react@${reactMajor}`, `react-dom@${reactMajor}`, `@types/react@${reactMajor}`, `@types/react-dom@${reactMajor}`, 'typescript@5'], app);
 
   writeFileSync(join(app, 'esm.mjs'), `
     import { createElement as h } from 'react';
@@ -105,4 +112,4 @@ try {
 } finally {
   rmSync(work, { recursive: true, force: true });
 }
-if (!process.exitCode) console.log('check-package: ok');
+if (!process.exitCode) console.log(`check-package (React ${reactMajor}): ok`);
